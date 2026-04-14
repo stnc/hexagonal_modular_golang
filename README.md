@@ -2,8 +2,47 @@
 
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
+`
+├─ cmd/
+│  └─ api/
+│     └─ main.go
+│
+├─ internal/
+│  ├─ user/
+│  │  ├─ adapters/
+│  │  │  ├─ inbound/
+│  │  │  │  └─ http_handler.go
+│  │  │  └─ outbound/
+│  │  │     ├─ postgres_repo.go
+│  │  │     ├─ redis_repo.go
+│  │  │     └─ mongo_repo.go
+│  │  │
+│  │  ├─ app/
+│  │  │  └─ service.go
+│  │  │
+│  │  ├─ domain/
+│  │  │  └─ model.go
+│  │  │
+│  │  └─ ports/
+│  │     ├─ inbound.go
+│  │     └─ outbound.go
+│  │
+│  └─ posts/
+│     ├─ adapters/
+│     │  ├─ inbound/
+│     │  └─ outbound/
+│     │
+│     ├─ app/
+│     ├─ domain/
+│     └─ ports/
+│
+├─ docker-compose.yml
+├─ go.mod
+├─ go.sum
+└─ README.md
+`
 
-## modular hexagolanl Architecture with golang
+## modular hexagonal Architecture with golang
 
 The entire system adheres to SOLID principles and Clean Architecture.
 
