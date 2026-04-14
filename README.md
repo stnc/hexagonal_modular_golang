@@ -2,7 +2,7 @@
 
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
-`
+
 ├─ cmd/
 │  └─ api/
 │     └─ main.go
@@ -40,7 +40,7 @@ Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 ├─ go.mod
 ├─ go.sum
 └─ README.md
-`
+
 
 ## modular hexagonal Architecture with golang
 
