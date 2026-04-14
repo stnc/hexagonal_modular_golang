@@ -3,43 +3,67 @@
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
 ```
+
 ├─ cmd/
-│  └─ api/
 │     └─ main.go
-│
 ├─ internal/
-│  ├─ user/
-│  │  ├─ adapters/
-│  │  │  ├─ inbound/
-│  │  │  │  └─ http_handler.go
-│  │  │  └─ outbound/
-│  │  │     ├─ postgres_repo.go
-│  │  │     ├─ redis_repo.go
-│  │  │     └─ mongo_repo.go
-│  │  │
-│  │  ├─ app/
-│  │  │  └─ service.go
-│  │  │
-│  │  ├─ domain/
-│  │  │  └─ model.go
-│  │  │
-│  │  └─ ports/
-│  │     ├─ inbound.go
-│  │     └─ outbound.go
-│  │
-│  └─ posts/
-│     ├─ adapters/
-│     │  ├─ inbound/
-│     │  └─ outbound/
-│     │
-│     ├─ app/
-│     ├─ domain/
-│     └─ ports/
-│
-├─ docker-compose.yml
-├─ go.mod
-├─ go.sum
-└─ README.md
+│  ├─ modules/
+│  │  ├─ posts/
+│  │  │  ├─ adapters/
+│  │  │  │  ├─ inbound/
+│  │  │  │  │  └─ http/
+│  │  │  │  └─ outbound/
+│  │  │  │     ├─ mongodb/
+│  │  │  │     ├─ postgres/
+│  │  │  │     └─ redis/
+│  │  │  ├─ app/
+│  │  │  │  └─ service.go
+│  │  │  ├─ domain/
+│  │  │  │  └─ post.go
+│  │  │  └─ ports/
+│  │  │     └─ ports.go
+│  │  └─ user/
+│  │     ├─ adapters/
+│  │     │  ├─ inbound/
+│  │     │  │  └─ http/
+│  │     │  └─ outbound/
+│  │     │     ├─ mongodb/
+│  │     │     ├─ postgres/
+│  │     │     └─ redis/
+│  │     ├─ app/
+│  │     │  └─ service.go
+│  │     ├─ domain/
+│  │     │  ├─ user.go
+│  │     │  └─ userJson.go
+│  │     └─ ports/
+│  │        └─ ports.go
+│  ├─ platform/
+│  │  ├─ cache/
+│  │  │  └─ redis/
+│  │  │     └─ redis.go
+│  │  ├─ config/
+│  │  │  └─ config.go
+│  │  ├─ database/
+│  │  │  ├─ mongodb/
+│  │  │  │  └─ mongodb.go
+│  │  │  └─ postgres/
+│  │  │     └─ postgres.go
+│  │  ├─ helpers/
+│  │  │  ├─ stnccollection/
+│  │  │  ├─ stncdatetime/
+│  │  │  ├─ stnchelper/
+│  │  │  ├─ stncsession/
+│  │  │  └─ stncupload/
+│  │  └─ id/
+│  │     └─ id.go
+│  └─ transport/
+│     ├─ api/
+│     │  ├─ app.go
+│     ├─ common/
+│     │  └─ common.go
+│     └─ web/
+│        └─ app.go
+
 ```
 
 ## modular hexagonal Architecture with golang
