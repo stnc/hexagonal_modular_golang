@@ -12,8 +12,7 @@ import (
 	postsredis "hexagonalapp/internal/modules/posts/adapters/outbound/redis"
 	postsapp "hexagonalapp/internal/modules/posts/app"
 	// userhttp "hexagonalapp/internal/modules/user/adapters/inbound/http"
-	"github.com/gofiber/fiber/v3/extractors"
-	"github.com/gofiber/fiber/v3/middleware/csrf"
+
 	"github.com/gofiber/fiber/v3/middleware/session"
 	usermongo "hexagonalapp/internal/modules/user/adapters/outbound/mongodb"
 	userpg "hexagonalapp/internal/modules/user/adapters/outbound/postgres"
@@ -37,7 +36,7 @@ import (
 func Runner(app *fiber.App) error {
 
 	cfg := config.Load()
-
+var store *session.Store
 	pgDB := postgresplatform.DbConnect(cfg)
 
 	mongoClient, err := mongoplatform.Open(context.Background(), cfg.MongoDBURI)
@@ -65,7 +64,7 @@ func Runner(app *fiber.App) error {
 	postsService := postsapp.New(postsRepo, postsCache, postsMirror)
 	//postsHandler := postshttp.NewAPI(postsService)
 
-	store := session.NewStore(session.Config{
+	store = session.NewStore(session.Config{
 		IdleTimeout:       30 * time.Minute,
 		AbsoluteTimeout:   24 * time.Hour, // Force expire after 24 hours regardless of activity
 		CookieHTTPOnly:    true,
@@ -74,15 +73,7 @@ func Runner(app *fiber.App) error {
 		CookieSessionOnly: false,
 	})
 
-	app.Use(csrf.New(csrf.Config{
-		Session:        store,
-		CookieHTTPOnly: true,
-		CookieSameSite: "Lax",
-		CookieSecure:   cfg.EnvName == "PRODUCTION",
-		Extractor:      extractors.FromForm("_csrf"),
-		IdleTimeout:    30 * time.Minute,
-		CookieName:     "csrf_",
-	}))
+
 
 	app.Use(cors.New())
 	app.Use(recover.New())
@@ -96,7 +87,7 @@ func Runner(app *fiber.App) error {
 			}
 					apiRunning.Run(app)
 	*/
-
+	// app.Use(NotFound) // 404
 	// fmt.Println("APP params:", *flags)
 	switch cfg.App {
 	case "api":
@@ -104,16 +95,16 @@ func Runner(app *fiber.App) error {
 		apiWORker.Run(app)
 	case "web":
 		webWORker := web.NewHandlers(userService, postsService)
-		webWORker.Run(app)
+			webWORker.Run(app, store,  cfg.EnvName)
 
 	default:
-			apiWORker := api.NewHandlers(userService, postsService)
+		apiWORker := api.NewHandlers(userService, postsService)
 		apiWORker.Run(app)
 		webWORker := web.NewHandlers(userService, postsService)
-		webWORker.Run(app)
+		webWORker.Run(app, store,  cfg.EnvName)
 	}
 
-	app.Use(NotFound) // 404
+
 	return app.Listen(fmt.Sprintf(":%s", "9999"))
 
 }
