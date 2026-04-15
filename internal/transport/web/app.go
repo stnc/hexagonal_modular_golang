@@ -32,7 +32,7 @@ func NewHandlers(
 
 func (h *Handlers) Run(app *fiber.App, store *session.Store, cfgEnv string) {
 
-	//https://chatgpt.com/c/69df1467-91b8-8332-aef1-6b6c01bce58d
+
 	app.Use(csrf.New(csrf.Config{
 		Session:        store,
 		CookieHTTPOnly: true,
