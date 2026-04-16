@@ -2,7 +2,7 @@
 
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
-## modular hexagolanl Architecture with golang
+## Modular Hexagonal Architecture with golang
 
 The entire system adheres to SOLID principles and Clean Architecture.
 
