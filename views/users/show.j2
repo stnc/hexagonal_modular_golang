@@ -1,0 +1,23 @@
+{% extends "layouts/main.j2" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h3 mb-4"> {{ Title }}</h1>
+    <form action="{{ FormAction }}" method="post" class="row g-3">
+      <input type="hidden" name="_csrf" value="{{ CsrfToken }}">
+      <div class="col-12">
+        <label class="form-label">NAme Lastname</label> <strong>{{ Name}}</strong>
+
+      </div>
+      <div class="col-12">
+        <label class="form-label">Email</label>
+       <strong>{{ Email }}</strong>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">{{ SubmitLabel }}</button>
+
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

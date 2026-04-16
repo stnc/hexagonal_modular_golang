@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/csrf"
 	"github.com/gofiber/fiber/v3/middleware/session"
@@ -90,14 +91,16 @@ func userFriendlyMessage(err validator.FieldError) string {
 
 func baseData(c fiber.Ctx, data fiber.Map) fiber.Map {
 	var store *session.Store
-	flash := middleware.PopFlash(store, c)
+
+	flashPop := middleware.PopFlash(store, c)
+	flash := middleware.ConsumeFlash(store, c)
 	csrfToken := csrf.TokenFromContext(c)
 	base := fiber.Map{
 		"FlashSuccess": flash.Success,
-		// "FlashError":   message,// TODO: bunu bak
+		"FlashError":   flash.Error,
 		"CsrfToken":    csrfToken,
-		"FlashType":    flash.Type,
-		"FlashMessage": flash.Message,
+		"FlashType":    flashPop.Type,
+		"FlashMessage": flashPop.Message,
 	}
 	for k, v := range data {
 		base[k] = v
@@ -114,21 +117,18 @@ func BindInput(c fiber.Ctx) (CreateUserInput, fiber.Map, error) {
 	if err := UsecaseValidate(input); err != nil {
 		return input, ValidationToMap(err), err
 	}
-	return input, fiber.Map{}, nil
+
+	return input, fiber.Map{}, nil 
 }
-
-
-
-
 
 func RenderCreateWithErrors(c fiber.Ctx, input CreateUserInput, data fiber.Map, err error) error {
 	base := baseData(c, fiber.Map{
 		"PageTitle":   "Create user",
-		"FormAction":  "/users",
+		"FormAction":  "/web/user/store",
 		"SubmitLabel": "Create user",
 		"FormMode":    "create",
 		"User":        input,
-		// "Age":         strconv.Itoa(input.Age),
+
 	})
 	for k, v := range data {
 		base[k] = v
@@ -139,3 +139,20 @@ func RenderCreateWithErrors(c fiber.Ctx, input CreateUserInput, data fiber.Map, 
 	return c.Status(http.StatusUnprocessableEntity).Render("users/create", base)
 }
 
+func RenderEditWithErrors(c fiber.Ctx, id uint, input CreateUserInput, data fiber.Map, err error) error {
+	base := baseData(c, fiber.Map{
+		"PageTitle":   "Edit user",
+		"FormAction":  fmt.Sprintf("/web/users/%d/update", id),
+		"SubmitLabel": "Update user",
+		"FormMode":    "edit",
+		"UserID":      id,
+		"User":        input,
+	})
+	for k, v := range data {
+		base[k] = v
+	}
+	if len(data) == 0 {
+		base["ErrorGeneral"] = err.Error()
+	}
+	return c.Status(http.StatusUnprocessableEntity).Render("users/edit", base)
+}

@@ -6,12 +6,16 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"gopkg.in/go-playground/validator.v9"
 
+	"errors"
+	// "fmt"
 	"hexagonalapp/internal/modules/user/domain"
 	"hexagonalapp/internal/modules/user/ports"
-
+	conventorLib "hexagonalapp/internal/platform/helpers/stnccollection"
+	"strings"
 	"time"
-	// "hexagonalapp/internal/platform/id"
 )
+
+var ErrNotFound = errors.New("user not found")
 
 type Service struct {
 	repo     ports.Repository
@@ -46,23 +50,52 @@ func (s *Service) CreateUser(ctx context.Context, input domain.CreateUserInput) 
 		UpdatedAt: now,
 	}
 
-	user2 := domain.User{Name: input.Name, Email: input.Email}
-
 	if err := s.repo.Create(ctx, user); err != nil {
 		return nil, fiber.Map{}, err
 	}
 
 	if s.cache != nil {
-		_ = s.cache.Set(ctx, user2)
+		_ = s.cache.Set(ctx, *user)
 	}
 	if s.audit != nil {
-		_ = s.audit.Record(ctx, "user.created", user2)
+		_ = s.audit.Record(ctx, "user.created", *user)
 	}
 
 	return user, fiber.Map{}, nil
 }
 
-/* alt taraf orginal dir */
+func (s *Service) Update(ctx context.Context, input domain.CreateUserInput) (*domain.User, fiber.Map, error) {
+	if input.ID == 0 {
+		// return nil, fiber.Map{}, fmt.Errorf("%w: id is required", ErrNotFound)
+		return nil, fiber.Map{"ErrorID": "%w: id is required"}, domain.ErrEmailAlreadyUsed
+	}
+	if err := domain.ValidateInput(input); err != nil {
+		return nil, fiber.Map{}, err
+	}
+	/*
+		//TODO: will made a one func
+		exists, err := s.repo.ExistsByEmail(ctx, input.Email, 0)
+		if err != nil {
+			return nil, fiber.Map{}, err
+		}
+		if exists {
+			return nil, fiber.Map{"ErrorEmail": "email already used"}, domain.ErrEmailAlreadyUsed
+		}
+	*/
+	user := &domain.User{ID: input.ID, Name: strings.TrimSpace(input.Name), Email: strings.ToLower(strings.TrimSpace(input.Email))}
+	if err := s.repo.Update(ctx, user); err != nil {
+		return nil, fiber.Map{}, err
+	}
+	if s.cache != nil {
+		_ = s.cache.Set(ctx, *user)
+	}
+	if s.audit != nil {
+		_ = s.audit.Record(ctx, "update", *user)
+	}
+	return user, fiber.Map{}, nil
+}
+
+/* below is  orginal  */
 
 func (s *Service) GetUser(ctx context.Context, userID string) (domain.User, error) {
 	if user, ok, err := s.cache.Get(ctx, userID); err == nil && ok {
@@ -73,8 +106,30 @@ func (s *Service) GetUser(ctx context.Context, userID string) (domain.User, erro
 	if err != nil {
 		return domain.User{}, err
 	}
-	_ = s.cache.Set(ctx, user)
+	err = s.cache.Set(ctx, user)
+	if err != nil {
+		return domain.User{}, err
+	}
+
 	return user, nil
+}
+
+func (s *Service) Delete(ctx context.Context, id2 uint) error {
+	id:= conventorLib.UintToString(id2)
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err := s.repo.Delete(ctx, id2); err != nil {
+		return err
+	}
+	if s.cache != nil {
+		_ = s.cache.Delete(ctx, id)
+	}
+	if s.audit != nil {
+		_ = s.audit.Record(ctx, "delete", user)
+	}
+	return nil
 }
 
 func (s *Service) ListUsers(ctx context.Context) ([]domain.User, error) {
@@ -94,7 +149,8 @@ func (f *Service) Count(postTotalCount *int64) {
 }
 
 /*
-//buradaki alttaki kisim ismini json daki verisinden okumak icin yazildi belki ilerde eklenebilir
+TODO : REVIEW ???? 
+//oldest 
 //validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 
 func (v *Service) Validate() map[string]string {

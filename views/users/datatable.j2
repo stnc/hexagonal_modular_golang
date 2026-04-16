@@ -1,0 +1,80 @@
+{% extends "layouts/main.j2" %}
+{% block content %}
+<h1>USER LIST </h1>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<table id="myTable" class="display">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+</table>
+
+<script>
+$(document).ready(function() {
+    $('#myTable').DataTable({
+
+"serverSide": true, // Server-side mode
+"paging": true,     // Enable/disable pagination
+"pageLength": 3,   // Default number of records
+"lengthMenu": [10, 25, 50, 100], // Limits selectable by the user
+"pagingType": "full_numbers", // Displays page numbers (1, 2, 3...)
+"language": { // Turkish language support
+        "paginate": {
+            "first": "first",
+            "last": "last",
+            "next": "forward",
+            "previous": "backward"
+        },
+        "lengthMenu": "_MENU_ show record",
+        "info": "_TOTAL_ with _START_ - _END_ between"
+    },
+        "processing": true,
+   
+        "ajax": {
+            "url": "/web/ajaxdatatable",
+            "type": "GET"
+        },
+        "columns": [
+            { "data": "id" },
+            { "data": "name" },
+            { "data": "email" }, 
+            {
+            data: null, //Since it is a button column, it has no data source.
+            render: function (data, type, row) {
+                return `
+                    <button class="btn btn-sm btn-primary edit-btn" data-id="${row.id}">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${row.id}">Delete</button>
+                `;
+            }
+        }
+
+        ]
+    });
+});
+// Düzenle Butonu
+$(document).on('click', '.edit-btn', function() {
+    const id = $(this).data('id');
+    window.location.href = `/web/users/${id}/edit`;
+});
+
+// Sil Butonu
+$(document).on('click', '.delete-btn', function() {
+    const id = $(this).data('id');
+    if(confirm('Are you sure you want to delete this record?')) {
+        fetch(`/web/users/${id}/delete`, { method: 'DELETE' })
+            .then(() => $('#userTable').DataTable().ajax.reload());
+    }
+});
+
+</script>
+
+
+{% endblock %}

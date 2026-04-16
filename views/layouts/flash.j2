@@ -1,0 +1,21 @@
+
+
+    {% if ErrorGeneral %}
+<div class="alert alert-danger">{{ ErrorGeneral }}</div>
+{% endif %}
+
+    {% if FlashSuccess %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ FlashSuccess }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+  </div>
+  {% endif %}
+  
+  {% if FlashError %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ FlashError }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+  </div>
+  {% endif %}
+
+

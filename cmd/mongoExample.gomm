@@ -1,0 +1,153 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	
+	"time"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
+)
+
+type NumberDoc struct {
+	Name  string  `bson:"name"`
+	Value float64 `bson:"value"`
+}
+
+func main() {
+			uri := "mongodb://root:examplepassword@localhost:27017/?authSource=admin"
+
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatal("connect error: ", err)
+	}
+	defer func() {
+		if err := client.Disconnect(context.Background()); err != nil {
+			log.Println("disconnect error:", err)
+		}
+	}()
+
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		log.Fatal("ping error: ", err)
+	}
+
+	collection := client.Database("testing").Collection("numbers")
+
+	// Insert
+	insertCtx, insertCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer insertCancel()
+
+	doc := NumberDoc{
+		Name:  "pi",
+		Value: 3.14159,
+	}
+
+	insertRes, err := collection.InsertOne(insertCtx, doc)
+	if err != nil {
+		log.Fatal("insert error: ", err)
+	}
+	fmt.Println("Inserted ID:", insertRes.InsertedID)
+
+	// Find one
+	findOneCtx, findOneCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer findOneCancel()
+
+	var found NumberDoc
+	err = collection.FindOne(findOneCtx, bson.D{{Key: "name", Value: "pi"}}).Decode(&found)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			fmt.Println("Kayıt bulunamadı")
+			return
+		}
+		log.Fatal("findOne error: ", err)
+	}
+	fmt.Printf("FindOne sonucu: %+v\n", found)
+
+	// Find all
+	findCtx, findCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer findCancel()
+
+	cursor, err := collection.Find(findCtx, bson.D{})
+	if err != nil {
+		log.Fatal("find error: ", err)
+	}
+	defer cursor.Close(findCtx)
+
+	fmt.Println("Tüm kayıtlar:")
+	for cursor.Next(findCtx) {
+		var item NumberDoc
+		if err := cursor.Decode(&item); err != nil {
+			log.Fatal("decode error: ", err)
+		}
+		fmt.Printf("- %+v\n", item)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Fatal("cursor error: ", err)
+	}
+}
+
+/*
+import (
+	"log"
+
+	"github.com/gofiber/fiber/v3"
+	// api "hexagonalapp/internal/transport/api"
+	all "hexagonalapp/internal/transport/common"
+	"github.com/gofiber/template/django/v4"
+)
+
+func main() {
+
+	engine := django.New("./views", ".j2")
+	engine.Reload(true)
+
+	app := fiber.New(fiber.Config{
+		Views:          engine,
+		ReadBufferSize: 16 * 1024, // 16KB buffer size for reading request bodies
+		// ViewsLayout: "layouts/main", //TODO: neden var amaci ne ?
+	})
+
+	if err := all.Runner(app); err != nil {
+		log.Fatal(err)
+	}
+
+}
+*/
+/*
+   	fmt.Println(`
+   |\     /|(  ____ \( \      \__   __/|\     /|
+   | )   ( || (    \/| (         ) (   ( \   / )
+   | (___) || (__    | |         | |    \ (_) /
+   |  ___  ||  __)   | |         | |     ) _ (
+   | (   ) || (      | |         | |    / ( ) \
+   | )   ( || (____/\| (____/\___) (___( /   \ )
+   |/     \|(_______/(_______/\_______/|/     \|       v3.1.0
+
+   --------------------------------------------------------------------------------------
+   `)
+
+*/
+/*
+
+	fmt.Println(`
+          _______           _______  _______  _______  _        _______  _
+|\     /|(  ____ \|\     /|(  ___  )(  ____ \(  ___  )( (    /|(  ___  )( \
+| )   ( || (    \/( \   / )| (   ) || (    \/| (   ) ||  \  ( || (   ) || (
+| (___) || (__     \ (_) / | (___) || |      | |   | ||   \ | || (___) || |
+|  ___  ||  __)     ) _ (  |  ___  || | ____ | |   | || (\ \) ||  ___  || |
+| (   ) || (       / ( ) \ | (   ) || | \_  )| |   | || | \   || (   ) || |
+| )   ( || (____/\( /   \ )| )   ( || (___) || (___) || )  \  || )   ( || (____/\
+|/     \|(_______/|/     \||/     \|(_______)(_______)|/    )_)|/     \|(_______/
+
+--------------------------------------------------------------------------------------
+`)
+*/

@@ -1,0 +1,35 @@
+{% extends "layouts/main.j2" %}
+{% block content %}
+<h1>USER LIST </h1>
+<table class="table">
+<thead>
+          <tr>
+            <th>ID</th>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th class="text-end">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in Users %}
+          <tr>
+            <td>{{ user.ID }}</td>
+            <td>{{ user.Name }}</td>
+            <td>{{ user.Email }}</td>
+            <td class="text-end">
+              <a href="/web/users/{{ user.ID }}/edit" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+              <form action="/web/users/{{ user.ID }}/delete " method="post" class="d-inline" onsubmit="return confirm('Silinsin mi?');">
+                <input type="hidden" name="_csrf" value="{{ CsrfToken }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">Henüz kullanıcı yok.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+</table>
+
+{% endblock %}

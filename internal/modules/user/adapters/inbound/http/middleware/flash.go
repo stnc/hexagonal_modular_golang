@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/session"
 )
@@ -8,7 +10,7 @@ import (
 type Flash struct {
 	Success string
 	Error   string
-		Type    string
+	Type    string
 	Message string
 }
 
@@ -18,57 +20,52 @@ const (
 )
 
 func ConsumeFlash(store *session.Store, c fiber.Ctx) Flash {
-	sess, err := store.Get(c)
-	if err != nil {
-		return Flash{}
-	}
-	defer sess.Release()
+	sess := session.FromContext(c)
 
 
 
-	
 	flash := Flash{}
-	if v, ok := sess.Get("flash_success").(string); ok {
+	if v, ok := sess.Get("FlashSuccess").(string); ok {
+		fmt.Println("flash succces")
+		fmt.Println(v)
 		flash.Success = v
-		sess.Delete("flash_success")
+		sess.Delete("FlashSuccess")
 	}
-	if v, ok := sess.Get("flash_error").(string); ok {
+	if v, ok := sess.Get("FlashError").(string); ok {
+			fmt.Println("flash eroorr")
+		fmt.Println(v)
 		flash.Error = v
-		sess.Delete("flash_error")
+		sess.Delete("FlashError")
 	}
-	_ = sess.Save()
+	
+
 	return flash
 }
 
-func SetFlash(store *session.Store, c fiber.Ctx, success, failure string) error {
-	sess, err := store.Get(c)
-	if err != nil {
-		return err
-	}
-	defer sess.Release()
+func SetFlash(store *session.Store, c fiber.Ctx, success,   failure string)  {
+	sess := session.FromContext(c)
+
 	if success != "" {
-		sess.Set("flash_success", success)
+		sess.Set("FlashSuccess", success)
 	}
 	if failure != "" {
-		sess.Set("flash_error", failure)
+		sess.Set("FlashError", failure)
 	}
-	return sess.Save()
+
 }
 
-//  TODO: lang var 
-// bu yeni eklendi 
+//	TODO: lang var
+//
+// bu yeni eklendi
 func PopFlash(store *session.Store, c fiber.Ctx) Flash {
-	sess, err := store.Get(c)
-	if err != nil {
-		return Flash{}
-	}
-	defer sess.Release()
+		sess := session.FromContext(c)
+
+	
 	ft, _ := sess.Get(flashTypeKey).(string)
 	msg, _ := sess.Get(flashMessageKey).(string)
 	if msg != "" {
 		sess.Delete(flashTypeKey)
 		sess.Delete(flashMessageKey)
-		_ = sess.Save()
 	}
 	return Flash{Type: ft, Message: msg}
 }

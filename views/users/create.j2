@@ -1,0 +1,25 @@
+{% extends "layouts/main.j2" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h1 class="h3 mb-4"> {{ Title }}</h1>
+    <form action="{{ FormAction }}" method="post" class="row g-3">
+      <input type="hidden" name="_csrf" value="{{ CsrfToken }}">
+      <div class="col-12">
+        <label class="form-label">NAme Lastname</label>
+        <input type="text" name="name" class="form-control {% if ErrorName %}is-invalid{% endif %}" placeholder="Adınızı yazın" value="{{ User.Name }}" >
+            {% if ErrorName %}<div class="invalid-feedback">{{ ErrorName }}</div>{% endif %}
+      </div>
+      <div class="col-12">
+        <label class="form-label">Email</label>
+        <input type="text" name="email" class="form-control {% if ErrorEmail %}is-invalid{% endif %}"  value="{{ User.Email }}" >
+        {% if ErrorEmail %}<div class="invalid-feedback">{{ ErrorEmail }}</div>{% endif %}
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">{{ SubmitLabel }}</button>
+        <a href="/users" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

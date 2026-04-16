@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/gofiber/fiber/v3"
-	"time"
-
-	// postshttp "hexagonalapp/internal/modules/posts/adapters/inbound/http"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gofiber/fiber/v3/middleware/session"
 	postsmongo "hexagonalapp/internal/modules/posts/adapters/outbound/mongodb"
 	postspg "hexagonalapp/internal/modules/posts/adapters/outbound/postgres"
 	postsredis "hexagonalapp/internal/modules/posts/adapters/outbound/redis"
 	postsapp "hexagonalapp/internal/modules/posts/app"
-	// userhttp "hexagonalapp/internal/modules/user/adapters/inbound/http"
-
-	"github.com/gofiber/fiber/v3/middleware/session"
 	usermongo "hexagonalapp/internal/modules/user/adapters/outbound/mongodb"
 	userpg "hexagonalapp/internal/modules/user/adapters/outbound/postgres"
 	userredis "hexagonalapp/internal/modules/user/adapters/outbound/redis"
@@ -22,29 +20,27 @@ import (
 	"hexagonalapp/internal/platform/config"
 	mongoplatform "hexagonalapp/internal/platform/database/mongodb"
 	postgresplatform "hexagonalapp/internal/platform/database/postgres"
-
-	"github.com/gofiber/fiber/v3/middleware/cors"
-
-	"github.com/gofiber/fiber/v3/middleware/logger"
-	"github.com/gofiber/fiber/v3/middleware/recover"
 	api "hexagonalapp/internal/transport/api"
 	web "hexagonalapp/internal/transport/web"
+	"time"
 	// postshttp "hexagonalapp/internal/modules/posts/adapters/inbound/http"
 	// userhttp "hexagonalapp/internal/modules/user/adapters/inbound/http"
 )
 
 func Runner(app *fiber.App) error {
-
+	var store *session.Store
 	cfg := config.Load()
-var store *session.Store
+
 	pgDB := postgresplatform.DbConnect(cfg)
 
-	mongoClient, err := mongoplatform.Open(context.Background(), cfg.MongoDBURI)
+	MongoDBURI := "mongodb://" + cfg.MongoDBUser + ":" + cfg.MongoDBPassword + "@localhost:27017/?authSource=admin"
+
+	mongoClient, err := mongoplatform.Open(context.Background(), MongoDBURI)
 	if err != nil {
 		return err
 	}
 
-	rdb := redisplatform.New(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
+	rdb := redisplatform.New(cfg.RedisHost+":"+cfg.RedisPort, cfg.RedisPassword, cfg.RedisDB)
 
 	userRepo := userpg.New(pgDB)
 	if err := userRepo.AutoMigrate(); err != nil {
@@ -53,7 +49,7 @@ var store *session.Store
 	userCache := userredis.New(rdb)
 	userAudit := usermongo.New(mongoClient.Database(cfg.MongoDBName).Collection("user_events"))
 	userService := userapp.New(userRepo, userCache, userAudit)
-	//userHandler := userhttp.NewAPI(userService)
+	// userHandler := userhttp.NewAPI(userService)
 
 	postsRepo := postsmongo.New(mongoClient.Database(cfg.MongoDBName).Collection("posts"))
 	postsCache := postsredis.New(rdb)
@@ -71,9 +67,8 @@ var store *session.Store
 		CookieSameSite:    "Lax",
 		CookieSecure:      cfg.EnvName == "PRODUCTION",
 		CookieSessionOnly: false,
+	
 	})
-
-
 
 	app.Use(cors.New())
 	app.Use(recover.New())
@@ -87,23 +82,22 @@ var store *session.Store
 			}
 					apiRunning.Run(app)
 	*/
-	// app.Use(NotFound) // 404
-	// fmt.Println("APP params:", *flags)
+	// app.Use(NotFound) // 404 // TODO : how its work ?
+
 	switch cfg.App {
 	case "api":
 		apiWORker := api.NewHandlers(userService, postsService)
 		apiWORker.Run(app)
 	case "web":
 		webWORker := web.NewHandlers(userService, postsService)
-			webWORker.Run(app, store,  cfg.EnvName)
+		webWORker.Run(app, store, cfg.EnvName)
 
 	default:
 		apiWORker := api.NewHandlers(userService, postsService)
 		apiWORker.Run(app)
 		webWORker := web.NewHandlers(userService, postsService)
-		webWORker.Run(app, store,  cfg.EnvName)
+		webWORker.Run(app, store, cfg.EnvName)
 	}
-
 
 	return app.Listen(fmt.Sprintf(":%s", "9999"))
 

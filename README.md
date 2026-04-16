@@ -16,51 +16,55 @@ Two distinct endpoints were implemented—one for the API and one for the web in
 
 Within the system, every component has been decoupled through the use of Dependency Injection.
 
-
-
 This framework contains two modules and library :
-
-- `user`
-- `posts`
-- `pongo2 template engine - like django`
-- `pagination`
-- `jquery datatable and pagination`
-- `fiber v3`
-- `repository`
-- `redis cache`
-- `mongo db`
-- `Gorm`
-
-Both modules have a hexagonal structure and contain the following folders:
-
-- `adapters`
-- `app`
-- `domain`
-
-- `ports`
-
-Technologies:
-
-- Fiber
-- GORM
-- PostgreSQL
-- Redis
-- MongoDB
 
 ## Architecture
 
 - `domain`: pure business objects
 - `ports`: interfaces
 - `app`: use-case / service layer
+- `adapters`
 - `adapters/inbound`: HTTP/Fiber handlers
 - `adapters/outbound`: PostgreSQL, Redis, MongoDB implementations
+- `http`
+- `model`
+- `viewmodel`
+- `transport`
+- `helpers`
+- `platform`
+
+Both modules have a hexagonal structure and contain the following folders:
+
+- `user`
+- `posts`
+
+## Technologies
+
+- **Hexagonal Architecture**: domain, ports, use cases, adapters, repositories, HTTP layers
+- **Fiber v3**: routing, middleware, rendering
+- **Pongo2**: via `github.com/gofiber/template/django/v3`
+- **Bootstrap 5**: [css engine and template](https://github.com/StartBootstrap/startbootstrap-sb-admin)
+- **CSRF**: Fiber CSRF middleware + session store
+- **Flash Messages**: session-based
+- **PostgreSQL**: primary data source
+- **Redis**:  caching and session storage
+- **MongoDB**: audit logs
+- **Gorm**: ORM for Go
+- **Validator v9**: form validation
+- **jQuery DataTables and Pagination**: jQuery datatables and pagination
+- **Pagination**: pagination
+
+## Docker Compose
+
+Redis Commander, Adminer, and Mongo Express have been included in the Docker container.
+
 ## Execution
 
 For WEB
 
 ``` bash
 docker compose up -d
-go run ./cmd/web
+go run ./cmd
 ./air 
 
 ```
@@ -69,8 +73,8 @@ For API
 
 ```bash
 docker compose up -d
-go run ./cmd/api
-# ./air -c .airapi.toml
+go run ./cmd
+./air 
 
 ```
 
@@ -94,9 +98,9 @@ go run ./cmd/api
 - `POST /web/list/list_users_with_pagination`
 - `GET /web/list/normal_users"`
 - `GET /web/list/datatable`
-- `GET /web/usersDatatable`
-- `GET /web//user/create`
+- `GET /web/user/create`
 - `GET /web/user/:id`
+- `GET /users/:id/edit`
 
 [@credits for bootstrap.css template](https://github.com/StartBootstrap/startbootstrap-sb-admin)
 

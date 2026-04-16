@@ -1,0 +1,137 @@
+package main
+
+import (
+	// "log"
+	// "github.com/gofiber/fiber/v3"
+	// all "hexagonalapp/internal/transport/common"
+	// "github.com/gofiber/template/django/v4"
+	"encoding/json"
+		"context"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+
+
+)
+type User struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func main() {
+
+	ctx := context.Background()
+
+	// Redis bağlantısı
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "MDNcVb924a", // 
+		DB:       0,
+	})
+	defer func() {
+		if err := rdb.Close(); err != nil {
+			log.Println("redis close error:", err)
+		}
+	}()
+/*
+	// Basit string kaydet / oku
+	if err := rdb.Set(ctx, "foo", "bar", 10*time.Minute).Err(); err != nil {
+		log.Fatal("SET hatası:", err)
+	}
+
+	val, err := rdb.Get(ctx, "foo").Result()
+	if err != nil {
+		log.Fatal("GET hatası:", err)
+	}
+	fmt.Println("foo =", val)
+*/
+
+// Kaydedilecek veri
+	user := User{
+		ID:    1,
+		Name:  "Ahmet",
+		Email: "ahmet@example.com",
+	}
+
+	// JSON'a çevir
+	jsonData, err := json.Marshal(user)
+	if err != nil {
+		log.Fatal("JSON marshal hatası:", err)
+	}
+
+	// Redis'e kaydet
+	err = rdb.Set(ctx, "user:1", jsonData, 5*time.Minute).Err()
+	if err != nil {
+		log.Fatal("Redis SET hatası:", err)
+	}
+
+	fmt.Println("JSON kaydedildi")
+
+	// Redis'ten oku
+	val, err := rdb.Get(ctx, "user:1").Result()
+	if err != nil {
+		log.Fatal("Redis GET hatası:", err)
+	}
+
+	// JSON'dan struct'a çevir
+	var result User
+	err = json.Unmarshal([]byte(val), &result)
+	if err != nil {
+		log.Fatal("JSON unmarshal hatası:", err)
+	}
+
+	fmt.Println("Okunan veri:", result)
+
+
+/*
+
+	engine := django.New("./views", ".j2")
+	engine.Reload(true)
+
+	app := fiber.New(fiber.Config{
+		Views:          engine,
+		ReadBufferSize: 16 * 1024, // 16KB buffer size for reading request bodies
+		// ViewsLayout: "layouts/main", //TODO: neden var amaci ne ? 
+	})
+
+	if err := all.Runner(app); err != nil {
+		log.Fatal(err)
+	}
+
+*/
+
+
+}
+
+/*
+   	fmt.Println(`
+   |\     /|(  ____ \( \      \__   __/|\     /|
+   | )   ( || (    \/| (         ) (   ( \   / )
+   | (___) || (__    | |         | |    \ (_) /
+   |  ___  ||  __)   | |         | |     ) _ (
+   | (   ) || (      | |         | |    / ( ) \
+   | )   ( || (____/\| (____/\___) (___( /   \ )
+   |/     \|(_______/(_______/\_______/|/     \|       v3.1.0
+
+   --------------------------------------------------------------------------------------
+   `)
+
+*/
+/*
+
+	fmt.Println(`
+          _______           _______  _______  _______  _        _______  _
+|\     /|(  ____ \|\     /|(  ___  )(  ____ \(  ___  )( (    /|(  ___  )( \
+| )   ( || (    \/( \   / )| (   ) || (    \/| (   ) ||  \  ( || (   ) || (
+| (___) || (__     \ (_) / | (___) || |      | |   | ||   \ | || (___) || |
+|  ___  ||  __)     ) _ (  |  ___  || | ____ | |   | || (\ \) ||  ___  || |
+| (   ) || (       / ( ) \ | (   ) || | \_  )| |   | || | \   || (   ) || |
+| )   ( || (____/\( /   \ )| )   ( || (___) || (___) || )  \  || )   ( || (____/\
+|/     \|(_______/|/     \||/     \|(_______)(_______)|/    )_)|/     \|(_______/
+
+--------------------------------------------------------------------------------------
+`)
+*/

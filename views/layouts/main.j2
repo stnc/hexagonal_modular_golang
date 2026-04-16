@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% include "partial/header.j2" %}
+
+<body>
+
+
+  {% include "partial/navbar.j2" %}
+
+  <div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+     {% include "partial/sidebar.j2" %}
+      </div>
+
+    <div id="layoutSidenav_content">
+    <div class="container-fluid">
+ 
+  
+          <main>
+
+  {% include "layouts/flash.j2" %}
+
+
+        {% block content %}{% endblock %}
+      </main>
+         </div>
+      {% include "partial/footer.j2" %}
+    </div>
+  </div>
+
+
+
+  {% include "partial/scripts.j2" %}
+
+
+
+</body>
+
+</html>

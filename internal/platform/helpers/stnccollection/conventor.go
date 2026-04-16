@@ -4,17 +4,16 @@ import (
 	"strconv"
 )
 
-//FloatToString64 float 2 string
-func FloatToString64(inputNum float64) string {
+// FloatToString64 float 2 string
+func FloatToString64(number float64) string {
 	// to convert a float number to a string
-	return strconv.FormatFloat(inputNum, 'f', 10, 64)
+	return strconv.FormatFloat(number, 'f', 10, 64)
 }
 
-//StringToFloat64  to convert a float number to a string
+// StringToFloat64  to convert a float number to a string
 func StringToFloat64(str string) (returnData float64, err2 error) {
 	returnData, err2 = strconv.ParseFloat(str, 64)
 	return returnData, err2
-
 }
 
 /*
@@ -47,26 +46,36 @@ interface return to string
 session.Get(key).(string)
 */
 
-//Uint64toString uint64 2 string
-func Uint64toString(inputNum uint64) string {
+// Uint64toString uint64 2 string
+func Uint64ToString(inputNum uint64) string {
 	return strconv.FormatUint(uint64(inputNum), 10)
 }
 
-//StringtoUint64 string 2 uint64
-func StringtoUint64(inputStr string) (uintInt uint64) {
-	uintInt, _ = strconv.ParseUint(inputStr, 10, 64)
+// StringtoUint64 string 2 uint64
+func StringToUint64(str string) (uintInt uint64) {
+	uintInt, _ = strconv.ParseUint(str, 10, 64)
 	return uintInt
 }
 
-//StringToint string 2 int
-//TODO: error vermemek sorun olur mu ?
+func StringToUint(str string) (uint, error) {
+	id64, err := strconv.ParseUint(str, 10, 64)
+	return uint(id64), err
+}
+
+func UintToString(number uint) string {
+	return strconv.Itoa(int(number))
+
+}
+
+// StringToint string 2 int
+// TODO: error vermemek sorun olur mu ?
 func StringToint(inputStr string) (IntType int) {
 	IntType, _ = strconv.Atoi(inputStr)
 	return IntType
 }
 
-//IntToString int 2 string
-//TODO: error vermemek sorun olur mu ?
+// IntToString int 2 string
+// TODO: error vermemek sorun olur mu ?
 func IntToString(inputStr int) string {
 	return strconv.Itoa(inputStr)
 }

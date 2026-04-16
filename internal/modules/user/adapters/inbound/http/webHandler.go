@@ -3,18 +3,21 @@ package http
 import (
 	"context"
 	"fmt"
-
+	"math"
+	"net/http"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/csrf"
 	"github.com/gofiber/fiber/v3/middleware/session"
+
 	// validator "gopkg.in/go-playground/validator.v9"
 	"hexagonalapp/internal/modules/user/adapters/inbound/http/middleware"
 	"hexagonalapp/internal/modules/user/adapters/inbound/http/viewmodels"
 	"hexagonalapp/internal/modules/user/app"
-	"math"
-"hexagonalapp/internal/modules/user/domain"
+	"hexagonalapp/internal/modules/user/domain"
+
+	conventorLib "hexagonalapp/internal/platform/helpers/stnccollection"
 )
 
 /*
@@ -50,7 +53,10 @@ func (h *WebHandler) Register(r fiber.Router) {
 	r.Get("/user/create", h.Create) // new  // #TODO  REadme ekle ve sidebar ekle
 	r.Post("/user/store", h.Store)  //create
 	r.Get("/users/:id", h.GetUser)
-
+	r.Get("/users/:id/edit", h.Edit)
+	r.Post("/users/:id/update", h.Update)
+	 r.Post("/users/:id/delete", h.Delete)
+	r.Delete("/users/:id/delete", h.Delete)
 	r.Get("/list/list_users_with_pagination", h.ListUsersWithPagination)
 	r.Get("/list/normal_users", h.ListAllUsers)
 	r.Get("/list/datatable", h.ListUsersDatatable)
@@ -58,15 +64,13 @@ func (h *WebHandler) Register(r fiber.Router) {
 }
 
 func (h *WebHandler) Create(c fiber.Ctx) error {
-	flash := middleware.ConsumeFlash(h.store, c)
+
 	return c.Render("users/create", fiber.Map{
-		"Title":        "New User Create",
-		"User":         viewmodels.UserForm{},
-		"FormAction":   "/web/user/store",
-		"SubmitLabel":  "Create user",
-		"FlashSuccess": flash.Success,
-		"FlashError":   flash.Error,
-		"CsrfToken":    csrf.TokenFromContext(c),
+		"Title":       "New User Create",
+		"User":        viewmodels.UserForm{},
+		"FormAction":  "/web/user/store",
+		"SubmitLabel": "Create user",
+		"CsrfToken":   csrf.TokenFromContext(c),
 	})
 }
 
@@ -74,6 +78,8 @@ func (h *WebHandler) Store(c fiber.Ctx) error {
 
 	input, validationData, err := domain.BindInput(c)
 	if err != nil {
+		fmt.Println("dsd")
+		middleware.SetFlash(h.store, c, "", "validation errors")
 		return domain.RenderCreateWithErrors(c, input, validationData, err)
 	}
 
@@ -82,38 +88,69 @@ func (h *WebHandler) Store(c fiber.Ctx) error {
 		return domain.RenderCreateWithErrors(c, input, validationData, err)
 	}
 
-	middleware.SetFlash(h.store, c, "success", fmt.Sprintf("%s created successfully", user.Name))
-	return c.Redirect().To("/web/user/edit/"+strconv.FormatUint(uint64( user.ID), 10))
+	middleware.SetFlash(h.store, c, "created successfully", "")
+	return c.Redirect().To("/web/users/" + strconv.FormatUint(uint64(user.ID), 10) + "/edit")
 
-	// input := app.CreateUserInput{
-	// 	Name:  c.FormValue("name"),
-	// 	Email: c.FormValue("email"),
-	// }
-	// 	fmt.Println(input)
-	// 	user, err := h.service.CreateUser(c.Context(), input)
-	// fmt.Println(user)
-	// fmt.Println(err)
-
-	// if err != nil {
-	// 	return h.handleFormError(c, "users/create", "/users/create", viewmodels.UserForm{Name: input.Name, Email: input.Email}, err)
-	// }
-	// if err := middleware.SetFlash(h.store, c, fmt.Sprintf("%s added succesfull", user.Name), ""); err != nil {
-	// 	return err
-	// }
-	// return c.Redirect().To("/web/user/create")
 }
 
+func (h *WebHandler) Edit(c fiber.Ctx) error {
 
-
-
-func (h *WebHandler) GetUser(c fiber.Ctx) error {
-	user, err := h.service.GetUser(context.Background(), c.Params("id"))
+	id, err := conventorLib.StringToUint(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(http.StatusBadRequest).SendString("invalid user id")
 	}
-	return c.JSON(user)
+
+	user, err := h.service.GetUser(context.Background(), conventorLib.UintToString(id))
+	if err != nil {
+		return c.Status(http.StatusNotFound).SendString("user not found")
+	}
+
+	return c.Render("users/edit", h.baseData(c, fiber.Map{
+		"PageTitle":   "Show user",
+		"FormAction":  fmt.Sprintf("/web/users/%d/update", user.ID),
+		"SubmitLabel": "Edit user",
+		"FormMode":    "edit",
+		"UserID":      user.ID,
+		"User":        user,
+	}))
 }
 
+func (h *WebHandler) Update(c fiber.Ctx) error {
+
+	id, err := conventorLib.StringToUint(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).SendString("invalid user id")
+	}
+	input, validationData, err := domain.BindInput(c)
+	input.ID = id
+	if err != nil {
+		return domain.RenderEditWithErrors(c, id, input, validationData, err)
+	}
+	user, validationData, err := h.service.Update(c.Context(), input)
+	if err != nil {
+		return domain.RenderEditWithErrors(c, id, input, fiber.Map{}, err)
+	}
+	middleware.SetFlash(h.store, c, "updated successfully", "")
+	return c.Redirect().To("/web/users/" + strconv.FormatUint(uint64(user.ID), 10) + "/edit")
+
+}
+
+func (h *WebHandler) baseData(c fiber.Ctx, data fiber.Map) fiber.Map {
+	flashPop := middleware.PopFlash(h.store, c)
+	flash := middleware.ConsumeFlash(h.store, c)
+	csrfToken := csrf.TokenFromContext(c)
+	base := fiber.Map{
+		"CsrfToken":    csrfToken,
+		"FlashType":    flashPop.Type,
+		"FlashMessage": flashPop.Message,
+		"FlashSuccess": flash.Success,
+		"FlashError":   flash.Error,
+	}
+	for k, v := range data {
+		base[k] = v
+	}
+	return base
+}
 func parsePage(v string) int {
 	page, err := strconv.Atoi(v)
 	if err != nil || page < 1 {
@@ -212,4 +249,37 @@ func (h *WebHandler) ListUsersDatatableAjax(c fiber.Ctx) error {
 		"recordsFiltered": filteredRecords,
 		"data":            users,
 	})
+}
+
+func (h *WebHandler) GetUser(c fiber.Ctx) error {
+	id, err := conventorLib.StringToUint(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).SendString("invalid user id")
+	}
+
+	user, err := h.service.GetUser(context.Background(), conventorLib.UintToString(id))
+	if err != nil {
+		return c.Status(http.StatusNotFound).SendString("user not found")
+	}
+	return c.Render("users/show", h.baseData(c, fiber.Map{
+		"PageTitle":   "Show user",
+		"FormAction":  fmt.Sprintf("/users/%d/update", user.ID),
+		"SubmitLabel": "Edit user",
+		"FormMode":    "edit",
+		"UserID":      user.ID,
+		"Name":        user.Name,
+		"Email":       user.Email,
+	}))
+}
+
+func (h *WebHandler) Delete(c fiber.Ctx) error {
+	id, err := conventorLib.StringToUint(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).SendString("invalid user id")
+	}
+	if err := h.service.Delete(c.Context(), id); err != nil {
+		return c.Status(http.StatusInternalServerError).SendString(err.Error())
+	}
+	middleware.SetFlash(h.store, c,  "user deleted successfully","")
+	return c.Redirect().To("/web/list/list_users_with_pagination")
 }

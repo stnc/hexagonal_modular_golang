@@ -1,0 +1,78 @@
+
+{% extends "layouts/main.j2" %}
+{% block content %}
+<h1>USER LIST </h1>
+
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Users</h1>
+  <a href="/users/new" class="btn btn-primary">New User add</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th class="text-end">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in Users %}
+          <tr>
+            <td>{{ user.ID }}</td>
+            <td>{{ user.Name }}</td>
+            <td>{{ user.Email }}</td>
+            <td class="text-end">
+              <a href="/web/users/{{ user.ID }}/edit" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+              <form action="/web/users/{{ user.ID }}/delete" method="post" class="d-inline" onsubmit="return confirm('Silinsin mi?');">
+                <input type="hidden" name="_csrf" value="{{ CsrfToken }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+              </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">Henüz kullanıcı yok.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+	    <nav aria-label="...">
+      <ul class="pagination">
+
+
+          {% if Pagination.HasPrev %}
+        <li class="page-item "><a  class="page-link" href="/web/list/list_users_with_pagination?page={{ Pagination.PrevPage }}">Previous</a></li>
+        {% endif %}
+
+
+        {% for p in Pagination.Pages %}
+      <li class="page-item  {% if p == Pagination.CurrentPage %}active{% endif %}">
+          <a href="/web/list/list_users_with_pagination?page={{ p }}" class="page-link">
+            {{ p }}
+          </a>
+        </li>
+        {% endfor %}
+
+
+     {% if Pagination.HasNext %}
+
+       
+        <li class="page-item"><a  class="page-link" href="/web/list/list_users_with_pagination?page={{ Pagination.NextPage }}">Next</a></li>
+            {% endif %}
+      </ul>
+    </nav>
+
+<strong>Total Record:  {{ TotalRecord }}</strong>
+
+    
+  </div>
+</div>
+{% endblock %}

@@ -35,26 +35,36 @@ services:
       - backend
     restart: unless-stopped
 
-  # Redis Service   
+  # # Redis Service   
   redis:
-    image: "redis:alpine" # Use a public Redis image to build the redis service    
+    image: redis:6.2-alpine
     restart: unless-stopped
     container_name: redis_hexago
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --requirepass MDNcVb924a --loglevel warning
     networks:
       - backend
+
 
   redis-commander:
     container_name: redis-commander_hexago
     hostname: redis-commander
-    image: rediscommander/redis-commander
-    restart: always
+    image: rediscommander/redis-commander:latest
     environment:
-    - REDIS_HOSTS=local:redis:6379
+    - REDIS_HOST=redis
+    - REDIS_PASSWORD=MDNcVb924a
     ports:
-    - "8081:8081"
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      - redis
+    restart:
+      unless-stopped
     networks:
       - backend
 
+
+      
     # adminer Service   
   adminer:
     image: adminer
@@ -77,12 +87,30 @@ services:
   mongo:
     image: mongo:7
     container_name: mongo_hexago
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: examplepassword
     ports:
-      - "27017:27017"
+    - "27017:27017"
     volumes:
-      - mongodata:/data/db
+        - mongo_data:/data/db
     networks:
-      - backend    
+        - backend
+
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express_hexago
+    depends_on:
+      - mongo
+    ports:
+      - "3000:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: "mongodb://root:examplepassword@mongo:27017/admin"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    networks:
+        - backend
 
 
 networks:
@@ -93,4 +121,4 @@ volumes:
     postgres:
     pgadmin:
     golang:
-    mongodata:
+    mongo_data:
