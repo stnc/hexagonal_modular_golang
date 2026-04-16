@@ -60,16 +60,7 @@ Redis Commander, Adminer, and Mongo Express have been included in the Docker con
 
 ## Execution
 
-For WEB
 
-``` bash
-docker compose up -d
-go run ./cmd
-./air 
-
-```
-
-For API
 
 ```bash
 docker compose up -d
