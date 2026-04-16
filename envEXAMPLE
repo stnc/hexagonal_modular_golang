@@ -1,0 +1,52 @@
+APP=all  # all, api , web 
+APP_PORT=9999
+DB_DEBUG_MODE=DEBUG #   DEBUG  PRODUCTION DEVELOPMENT
+
+APP_ENV=DEVELOPMENT #   DEBUG  PRODUCTION DEVELOPMENT
+
+DB_DRIVER=postgres #supabase postgres
+
+
+#ENABLE DISABLE
+GORM_ZAP_LOGGER=ENABLE
+
+
+SUPABASE_DSN=""
+
+DB_HOST=localhost
+DB_USER=postgres
+DB_PASSWORD=changeme
+DB_NAME=krbn
+DB_PORT=5432
+
+
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=hexagonalapp
+
+
+
+
+
+
+TEST_DB_HOST=localhost               
+TEST_DB_DRIVER=mysql
+TEST_DB_USER=root
+TEST_DB_PASSWORD=""
+TEST_DB_NAME=teknoparktest
+TEST_DB_PORT=3306
+
+
+
+
+
+
+#APP_ENV=local
+#API_PORT=8888
+#DB_HOST=127.0.0.1                
+#DB_DRIVER=postgres
+#ACCESS_SECRET=98hbun98h
+#REFRESH_SECRET=786dfdbjhsb
+###DB_USER=steven
+#DB_PASSWORD=password
+#DB_NAME=food-app
+#DB_PORT=5432
