@@ -36,7 +36,7 @@ This framework contains two modules and library :
 Both modules have a hexagonal structure and contain the following folders:
 
 - `user`
-- `posts`
+- `posts`  It has not been fully developed; you can complete the development by referring to the user file.
 
 ## Technologies
 
