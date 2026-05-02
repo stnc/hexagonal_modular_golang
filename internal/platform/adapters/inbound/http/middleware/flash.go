@@ -51,9 +51,7 @@ func SetFlash(store *session.Store, c fiber.Ctx, success, failure string) {
 
 }
 
-//	TODO: lang var
-//
-// bu yeni eklendi
+
 func PopFlash(store *session.Store, c fiber.Ctx) Flash {
 	sess := session.FromContext(c)
 
