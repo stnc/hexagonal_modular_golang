@@ -5,12 +5,13 @@ import (
 	"errors"
 	"time"
 
-	"gorm.io/gorm"
 	"hexagonalapp/internal/modules/posts/domain"
+
+	"gorm.io/gorm"
 )
 
 type PostModel struct {
-	ID        string    `gorm:"primaryKey;column:id"`
+	ID        uint      `gorm:"primaryKey;auto_increment;column:id"`
 	UserID    string    `gorm:"column:user_id;index"`
 	Title     string    `gorm:"column:title;not null"`
 	Content   string    `gorm:"column:content;not null"`
@@ -30,6 +31,19 @@ func New(db *gorm.DB) *Repository {
 
 func (r *Repository) AutoMigrate() error {
 	return r.db.AutoMigrate(&PostModel{})
+}
+
+func (r *Repository) Create(ctx context.Context, post *domain.Post) error {
+	return r.db.WithContext(ctx).Table("posts").Create(post).Error
+}
+
+func (r *Repository) Update(ctx context.Context, post domain.Post) error {
+	m := toModel(post)
+	return r.db.WithContext(ctx).Save(&m).Error
+}
+
+func (r *Repository) Delete(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Delete(&PostModel{}, "id = ?", id).Error
 }
 
 func (r *Repository) Upsert(ctx context.Context, post domain.Post) error {

@@ -20,13 +20,15 @@ func FileControlV1(uploadPath string) (uploadError string) {
 }
 
 // uses
-// func main() {
-//     if fileExists("example.txt") {
-//         fmt.Println("Example file exists")
-//     } else {
-//         fmt.Println("Example file does not exist (or is a directory)")
-//     }
-// }
+//
+//	func main() {
+//	    if fileExists("example.txt") {
+//	        fmt.Println("Example file exists")
+//	    } else {
+//	        fmt.Println("Example file does not exist (or is a directory)")
+//	    }
+//	}
+//
 // fileExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
 func fileExists(filename string) bool {

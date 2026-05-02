@@ -4,8 +4,10 @@ import (
 	"context"
 	"time"
 
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"hexagonalapp/internal/modules/posts/domain"
+	conventorLib "hexagonalapp/internal/platform/helpers/stnccollection"
+
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Audit struct {
@@ -26,10 +28,11 @@ type EventDocument struct {
 }
 
 func (a *Audit) Record(ctx context.Context, event string, post domain.Post) error {
+	ID := conventorLib.UintToString(post.ID)
 	_, err := a.collection.InsertOne(ctx, EventDocument{
-		ID:        post.ID + ":" + event,
+		ID:        ID + ":" + event,
 		Event:     event,
-		PostID:    post.ID,
+		PostID:    ID,
 		UserID:    post.UserID,
 		Title:     post.Title,
 		CreatedAt: time.Now().UTC(),

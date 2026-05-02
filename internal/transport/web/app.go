@@ -1,23 +1,21 @@
 package app
 
 import (
-		
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/extractors"
+	"github.com/gofiber/fiber/v3/middleware/session"
 	"github.com/gofiber/fiber/v3/middleware/static"
-		"github.com/gofiber/fiber/v3/extractors"
-			"github.com/gofiber/fiber/v3/middleware/session"
 
 	"github.com/gofiber/fiber/v3/middleware/csrf"
 	postshttp "hexagonalapp/internal/modules/posts/adapters/inbound/http"
 	postsapp "hexagonalapp/internal/modules/posts/app"
 	userhttp "hexagonalapp/internal/modules/user/adapters/inbound/http"
 	userapp "hexagonalapp/internal/modules/user/app"
-
 )
 
 type Handlers struct {
 	UserHandler  *userhttp.WebHandler
-	PostsHandler *postshttp.WEBHandler
+	PostsHandler *postshttp.WebHandler
 }
 
 func NewHandlers(
@@ -32,11 +30,10 @@ func NewHandlers(
 
 func (h *Handlers) Run(app *fiber.App, store *session.Store, cfgEnv string) {
 
-
 	app.Use(csrf.New(csrf.Config{
-		Session:        store,
-		Extractor:      extractors.FromForm("_csrf"),
-	    CookieName:        "csrf_",
+		Session:    store,
+		Extractor:  extractors.FromForm("_csrf"),
+		CookieName: "csrf_",
 	}))
 
 	app.Get("/", func(c fiber.Ctx) error {
@@ -50,8 +47,6 @@ func (h *Handlers) Run(app *fiber.App, store *session.Store, cfgEnv string) {
 			"Title": "this homepage",
 		})
 	})
-
-
 
 	app.Get("/public*", static.New("./public"))
 

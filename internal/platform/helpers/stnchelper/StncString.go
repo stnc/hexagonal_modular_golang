@@ -6,48 +6,6 @@ import (
 	"unicode/utf8"
 )
 
-//TestModeCode hepsini testi için
-func TestModeCode() {
-	// str := "SAADET SELMAN"
-	str := "ÇEKİÇSADETTİN BÜYÜKÇEKic"
-
-	// Convert string to rune slice before taking substrings.
-	// ... This will handle Unicode characters correctly.
-	//     Not needed for ASCII strings.
-	runes := []rune(str)
-
-	stringSlice := strings.Split(str, " ")
-	fmt.Printf("%v\n", stringSlice)
-	ilkKisim := stringSlice[0]
-	ikiKisim := stringSlice[1]
-
-	fmt.Println("ilk kısım ", ilkKisim)
-
-	fmt.Println("ikinci kısım ", ikiKisim)
-
-	toplamKarakter := utf8.RuneCountInString(str)
-	fmt.Println("toplam karakter ", toplamKarakter)
-
-	bassiz := string(runes[2:])
-	fmt.Println(" basi_yok:", bassiz)
-	fmt.Println(" bastan 2:", string(runes[:2]))
-	fmt.Println(" sondan 2:", string(runes[toplamKarakter-2:]))
-	return
-	yapianHali := string(bassiz[0 : toplamKarakter-2])
-	fmt.Println(" yapilan:", yapianHali)
-	fmt.Println(strings.Replace(yapianHali, " ", "#", -1))
-	toplamKarakter2 := len(yapianHali)
-	fmt.Println(" yapilan:", toplamKarakter2)
-
-	var text string
-
-	for i := 1; i < toplamKarakter2; i++ {
-		text += "*"
-	}
-	fmt.Println(" yapilan:", text)
-
-}
-
 func LetterPrefix(str string) string {
 	if len(str) > 0 {
 		runes := []rune(str)
@@ -88,7 +46,7 @@ func LetterMiddle(str string) string {
 	}
 }
 
-//TODO: tr karakterleir öçevir
+// TODO: tr karakterleir öçevir
 func LetterMiddleStars(str string) string {
 	if utf8.RuneCountInString(str) > 0 {
 		stringSlice := strings.Split(str, " ")

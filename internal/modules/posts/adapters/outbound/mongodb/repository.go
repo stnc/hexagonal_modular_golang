@@ -3,11 +3,14 @@ package mongodb
 import (
 	"context"
 	"errors"
-	"time"
+	"hexagonalapp/internal/modules/posts/domain"
+	conventorLib "hexagonalapp/internal/platform/helpers/stnccollection"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"hexagonalapp/internal/modules/posts/domain"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+
+	"time"
 )
 
 type PostDocument struct {
@@ -30,6 +33,54 @@ func New(collection *mongo.Collection) *Repository {
 func (r *Repository) Create(ctx context.Context, post domain.Post) error {
 	_, err := r.collection.InsertOne(ctx, toDocument(post))
 	return err
+}
+
+func (r *Repository) Upsert(ctx context.Context, post domain.Post) error {
+	_, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"_id": conventorLib.UintToString(post.ID)},
+		bson.M{
+			"$set": bson.M{
+				"user_id":    post.UserID,
+				"title":      post.Title,
+				"content":    post.Content,
+				"created_at": post.CreatedAt,
+				"updated_at": post.UpdatedAt,
+			},
+		},
+		options.UpdateOne().SetUpsert(true),
+	)
+	return err
+}
+
+func (r *Repository) Update(ctx context.Context, post domain.Post) error {
+	update := bson.M{
+		"$set": bson.M{
+			"user_id":    post.UserID,
+			"title":      post.Title,
+			"content":    post.Content,
+			"updated_at": post.UpdatedAt,
+		},
+	}
+	res, err := r.collection.UpdateOne(ctx, bson.M{"_id": post.ID}, update)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
+}
+
+func (r *Repository) Delete(ctx context.Context, id string) error {
+	res, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+	return nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, id string) (domain.Post, error) {
@@ -81,9 +132,11 @@ func (r *Repository) ListByUserID(ctx context.Context, userID string) ([]domain.
 }
 
 func toDocument(post domain.Post) PostDocument {
-	return PostDocument{ID: post.ID, UserID: post.UserID, Title: post.Title, Content: post.Content, CreatedAt: post.CreatedAt, UpdatedAt: post.UpdatedAt}
+	ID := conventorLib.UintToString(post.ID)
+	return PostDocument{ID: ID, UserID: post.UserID, Title: post.Title, Content: post.Content, CreatedAt: post.CreatedAt, UpdatedAt: post.UpdatedAt}
 }
 
 func toDomain(doc PostDocument) domain.Post {
-	return domain.Post{ID: doc.ID, UserID: doc.UserID, Title: doc.Title, Content: doc.Content, CreatedAt: doc.CreatedAt, UpdatedAt: doc.UpdatedAt}
+	ID, _ := conventorLib.StringToUint(doc.ID)
+	return domain.Post{ID: ID, UserID: doc.UserID, Title: doc.Title, Content: doc.Content, CreatedAt: doc.CreatedAt, UpdatedAt: doc.UpdatedAt}
 }

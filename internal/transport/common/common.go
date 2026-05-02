@@ -51,14 +51,16 @@ func Runner(app *fiber.App) error {
 	userService := userapp.New(userRepo, userCache, userAudit)
 	// userHandler := userhttp.NewAPI(userService)
 
-	postsRepo := postsmongo.New(mongoClient.Database(cfg.MongoDBName).Collection("posts"))
-	postsCache := postsredis.New(rdb)
-	postsMirror := postspg.New(pgDB)
-	if err := postsMirror.AutoMigrate(); err != nil {
+	postsRepo := postspg.New(pgDB)
+	if err := postsRepo.AutoMigrate(); err != nil {
 		return err
 	}
+	var postsCache *postsredis.Cache
+
+	postsCache = postsredis.New(rdb)
+
+	postsMirror := postsmongo.New(mongoClient.Database(cfg.MongoDBName).Collection("posts"))
 	postsService := postsapp.New(postsRepo, postsCache, postsMirror)
-	//postsHandler := postshttp.NewAPI(postsService)
 
 	store = session.NewStore(session.Config{
 		IdleTimeout:       30 * time.Minute,
@@ -67,7 +69,6 @@ func Runner(app *fiber.App) error {
 		CookieSameSite:    "Lax",
 		CookieSecure:      cfg.EnvName == "PRODUCTION",
 		CookieSessionOnly: false,
-	
 	})
 
 	app.Use(cors.New())

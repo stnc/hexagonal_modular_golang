@@ -1,14 +1,11 @@
 package stnchelper
 
 import (
-
 	"math/rand"
 
 	"time"
 
-
 	"github.com/gosimple/slug"
-	
 )
 
 /*
@@ -27,13 +24,13 @@ func RandSlugV1(n int) string {
 	return string(b)
 }
 
-//Slugify slug genereate
+// Slugify slug genereate
 func Slugify(title string, size int) string {
 	slug.MaxLength = size
 	return slug.MakeLang(title, "tr")
 }
 
-//GenericName for uplaod generic name
+// GenericName for uplaod generic name
 func GenericName(title string, size int) string {
 	var name string
 	name = Slugify(title, size)
@@ -41,4 +38,3 @@ func GenericName(title string, size int) string {
 	dateadd := currentTime.Format("15_04_05")
 	return name + "_" + dateadd
 }
-

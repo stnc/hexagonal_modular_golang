@@ -2,13 +2,14 @@ package postgres
 
 import (
 	"fmt"
-	// "helix/app/domain/entity"
-	// repo "helix/app/domain/repository"
-	// "helix/app/services"
+	// "hexagonalapp/app/domain/entity"
+	// repo "hexagonalapp/app/domain/repository"
+	// "hexagonalapp/app/services"
 
-     "hexagonalapp/internal/platform/config"
-	"gorm.io/gorm/schema"
+	"hexagonalapp/internal/platform/config"
+
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"gorm.io/gorm/logger"
 
@@ -16,6 +17,7 @@ import (
 )
 
 var DB *gorm.DB
+
 // func Open(dsn string) (*gorm.DB, error) {
 // 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 // }
@@ -23,11 +25,11 @@ var DB *gorm.DB
 func DbConnect(cfg config.Config) *gorm.DB {
 	var DBURL string
 	if cfg.DBDriver == "mysql" {
-		DBURL = cfg.DBUser + ":" + cfg.DBPassword+ "@tcp(" + cfg.DBHost + ":" + cfg.DBPort + ")/" + cfg.DBName + "?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local"
-	} else if cfg.DBDriver  == "postgres" {
+		DBURL = cfg.DBUser + ":" + cfg.DBPassword + "@tcp(" + cfg.DBHost + ":" + cfg.DBPort + ")/" + cfg.DBName + "?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local"
+	} else if cfg.DBDriver == "postgres" {
 		DBURL = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable ", cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName) //Build connection string
-	} else if cfg.DBDriver  == "supabase" {
-		DBURL =  cfg.Supabase //Build connection string
+	} else if cfg.DBDriver == "supabase" {
+		DBURL = cfg.Supabase //Build connection string
 	}
 
 	var logCtl logger.Interface

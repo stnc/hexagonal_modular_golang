@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
-	redisclient "github.com/redis/go-redis/v9"
 	"hexagonalapp/internal/modules/posts/domain"
+
+	redisclient "github.com/redis/go-redis/v9"
 )
 
 type Cache struct {
@@ -37,11 +39,12 @@ func (c *Cache) Get(ctx context.Context, id string) (domain.Post, bool, error) {
 }
 
 func (c *Cache) Set(ctx context.Context, post domain.Post) error {
+	ID := strconv.FormatUint(uint64(post.ID), 10)
 	data, err := json.Marshal(post)
 	if err != nil {
 		return err
 	}
-	return c.client.Set(ctx, c.key(post.ID), data, c.ttl).Err()
+	return c.client.Set(ctx, c.key(ID), data, c.ttl).Err()
 }
 
 func (c *Cache) Delete(ctx context.Context, id string) error {

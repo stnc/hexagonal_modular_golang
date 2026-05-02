@@ -2,7 +2,7 @@ package stnchelper
 
 import "encoding/base64"
 
-//BoxString eğer veriye hiç bişey Savemezse boşluk eklemeye yarar
+// BoxString eğer veriye hiç bişey Savemezse boşluk eklemeye yarar
 func BoxString(x string) *string {
 	return &x
 }
