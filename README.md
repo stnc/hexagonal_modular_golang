@@ -1,5 +1,9 @@
 # Modular Hexagonal Golang Project
 
+# Hexagonal Modular Golang Architecture 
+
+# Go Hexagonal Architecture
+
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
 ## Modular Hexagonal Architecture with golang
