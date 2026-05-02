@@ -1,4 +1,4 @@
-# Modular Hexagonal Go Project
+# Modular Hexagonal Golang Project
 
 Modular Hexagonal Golang Project <https://docs.gofiber.io/recipes/hexagonal/>
 
